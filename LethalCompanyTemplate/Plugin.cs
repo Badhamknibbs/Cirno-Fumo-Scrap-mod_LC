@@ -2,10 +2,6 @@
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
 
 namespace CirnoFumoScrap
 {
@@ -14,7 +10,7 @@ namespace CirnoFumoScrap
    public class FumoCirnoMod : BaseUnityPlugin {
       private const string modGUID = "badham.lc.cirnoscrap";
       private const string modName = "Cirno Fumo Scrap";
-      private const string modVersion = "1.0.0";
+      private const string modVersion = "1.0.1";
 
       private readonly Harmony harmony = new Harmony(modGUID);
 
@@ -30,7 +26,7 @@ namespace CirnoFumoScrap
             Instance = this;
          }
 
-         configFumoRarity = Config.Bind<int>("General", "FumoRarity", 30, new ConfigDescription("How rare Fumo Cirnos are to find. Lower values mean Fumos spawn less often", new AcceptableValueRange<int>(0, 100)));
+         configFumoRarity = Config.Bind("General", "FumoRarity", 30, new ConfigDescription("How rare Fumo Cirnos are to find. Lower values mean Fumos spawn less often", new AcceptableValueRange<int>(0, 100)));
          configOopsAllFumo = Config.Bind("Fun", "OopsAllFumo", false, "If enabled, all scrap spawns are replaced with Fumos. May not work as intended with other mods that tweak currentLevel.spawnableScrap");
 
          mls = BepInEx.Logging.Logger.CreateLogSource(modGUID);
@@ -42,7 +38,6 @@ namespace CirnoFumoScrap
 
       [HarmonyPatch(typeof(RoundManager))]
       internal class RoundManagerPatch {
-         // Replace all spawnables with cirno fumos
          [HarmonyPatch("SpawnScrapInLevel")]
          [HarmonyPrefix]
          static void FumoInjection(ref SelectableLevel ___currentLevel) {
@@ -62,6 +57,7 @@ namespace CirnoFumoScrap
          }
       }
 
+      // Adds fumos to the list of potential scrap spawns
       static void AddFumoScrap(ref SelectableLevel ___currentLevel, ref SpawnableItemWithRarity itemWithRarity) {
          Instance.mls.LogInfo("Adding Cirno Fumo as scrap to current level...");
 
@@ -69,6 +65,7 @@ namespace CirnoFumoScrap
          Instance.mls.LogInfo($"Added Cirno as spawnable scrap with rarity {itemWithRarity.rarity}");
       }
 
+      // Replace all spawnables with cirno fumos
       static void OopsAllFumos(ref SelectableLevel ___currentLevel, ref SpawnableItemWithRarity itemWithRarity) {
          Instance.mls.LogInfo("Replacing spawnable items with Cirno fumos...");
 
